@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RenoiseScriptingTool>
+  <ApiVersion>6</ApiVersion>
+  <AutoUpgraded>true</AutoUpgraded>
+  <Id>tools.cupcake.Playmate</Id>
+  <Version>1.000</Version>
+  <Author>cupcake99</Author>
+  <Name>Playmate</Name>
+  <Category>Utility</Category>
+  <Description>....</Description>
+</RenoiseScriptingTool>
