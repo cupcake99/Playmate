@@ -1,4 +1,5 @@
-local tool = renoise.tool()
+tool = renoise.tool()
+local config = require "config"
 local song = nil
 local MAX_LINES = 64 --renoise.Pattern.MAX_NUMBER_OF_LINES
 local prev_selected_pattern = nil
