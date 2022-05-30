@@ -5,6 +5,8 @@ local config = require "config"
 local song = nil
 local MAX_LINES = renoise.Pattern.MAX_NUMBER_OF_LINES
 local prev_selected_pattern = nil
+local prev_pattern_index = nil
+local copy_data = {}
 local original_pattern_length = nil
 local last_copy_start = 1
 local last_copy_length = 0
@@ -16,6 +18,11 @@ local function checkInput()
 end
 
 local function selectPatternNotifier()
+    copy_data[prev_pattern_index] = {
+        start = last_copy_start,
+        length = last_copy_length,
+        original = original_pattern_length
+    }
     if prev_selected_pattern:has_line_notifier(checkInput) then
         prev_selected_pattern:remove_line_notifier(checkInput)
     end
@@ -23,9 +30,16 @@ local function selectPatternNotifier()
         song.selected_pattern:add_line_notifier(checkInput)
     end
     prev_selected_pattern = song.selected_pattern
-    original_pattern_length = song.selected_pattern.number_of_lines
-    last_copy_start = 1
-    last_copy_length = 0
+    prev_pattern_index = song.selected_pattern_index
+    if copy_data[song.selected_pattern_index] then
+        original_pattern_length = copy_data[song.selected_pattern_index].original
+        last_copy_start = copy_data[song.selected_pattern_index].start
+        last_copy_length = copy_data[song.selected_pattern_index].length
+    else
+        original_pattern_length = song.selected_pattern.number_of_lines
+        last_copy_start = 1
+        last_copy_length = 0
+    end
     pattern_edited = false
 end
 
@@ -94,6 +108,7 @@ local function main()
     end
     song.selected_pattern:add_line_notifier(checkInput)
     prev_selected_pattern = song.selected_pattern
+    prev_pattern_index = song.selected_pattern_index
     original_pattern_length = song.selected_pattern.number_of_lines
     song.selected_pattern_observable:add_notifier(selectPatternNotifier)
 end
