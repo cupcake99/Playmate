@@ -1,8 +1,13 @@
+-- TODO: reset on stop option; key shortcuts; pretty up dialog
+
 tool = renoise.tool()
 local config = require "config"
 local song = nil
 local MAX_LINES = renoise.Pattern.MAX_NUMBER_OF_LINES
 local prev_selected_pattern = nil
+local original_pattern_length = nil
+local last_copy_start = 1
+local last_copy_length = 0
 local pattern_edited = false
 local lines_per_beat = 4
 
@@ -18,28 +23,44 @@ local function selectPatternNotifier()
         song.selected_pattern:add_line_notifier(checkInput)
     end
     prev_selected_pattern = song.selected_pattern
+    original_pattern_length = song.selected_pattern.number_of_lines
+    last_copy_start = 1
+    last_copy_length = 0
     pattern_edited = false
 end
 
 local function calculateNewPatternLength(lines)
     local length_limit = config.prefs.fixed_length_active.value and config.prefs.fixed_length.value or MAX_LINES
     if length_limit < lines then return lines end
-    local new_pattern_length = lines + (lines_per_beat * config.prefs.denominator.value)
+    local new_pattern_length = lines + (lines_per_beat * config.prefs.numerator.value)
     return new_pattern_length < length_limit and new_pattern_length or length_limit
 end
 
-local function copyPattern()
-    return
+local function copyPattern(start, length, offset)
+    local pattern = song.selected_pattern_index
+    for t=1, #song.tracks do
+        if not (t == song.selected_track_index or song.patterns[pattern].tracks[t].is_empty) then
+            for i=start, start+length-1 do
+                song.patterns[pattern].tracks[t].lines[i+offset]:copy_from(song.patterns[pattern].tracks[t].lines[i])
+            end
+        end
+    end
+    last_copy_start = start
+    last_copy_length = length
 end
 
 local function checkSongPos()
     local transport = song.transport
+    local pattern = song.selected_pattern
     if transport.playing and transport.edit_mode and transport.follow_player then
         if pattern_edited then
             local pos = transport.playback_pos
-            local lines = song.selected_pattern.number_of_lines
+            local lines = pattern.number_of_lines
             if lines - pos.line < 3 then
-                song.selected_pattern.number_of_lines = calculateNewPatternLength(lines)
+                pattern.number_of_lines = calculateNewPatternLength(lines)
+                if config.prefs.copy_pattern.value then
+                    copyPattern(last_copy_start+last_copy_length, pattern.number_of_lines-lines, original_pattern_length)
+                end
             end
         end
     end
@@ -58,6 +79,7 @@ local function checkEditMode()
     end
     if tool.app_idle_observable:has_notifier(checkSongPos) then
         tool.app_idle_observable:remove_notifier(checkSongPos)
+        pattern_edited = false
     end
 end
 
@@ -72,6 +94,7 @@ local function main()
     end
     song.selected_pattern:add_line_notifier(checkInput)
     prev_selected_pattern = song.selected_pattern
+    original_pattern_length = song.selected_pattern.number_of_lines
     song.selected_pattern_observable:add_notifier(selectPatternNotifier)
 end
 

@@ -8,7 +8,7 @@ Config.prefs = renoise.Document.create {
     fixed_length = 64,
     fixed_length_active = false,
     copy_pattern = false,
-    denominator = 4
+    numerator = 4
 }
 tool.preferences = Config.prefs
 
@@ -51,14 +51,14 @@ function Config:open_config ()
                         text = "beats per bar"
                     }
                 },
-                -- view:row {
-                    -- style = "plain",
-                    -- view:text {
-                        -- width = TEXT_ROW_WIDTH,
-                        -- align = "center",
-                        -- text = "copy pattern"
-                    -- }
-                -- }
+                view:row {
+                    style = "plain",
+                    view:text {
+                        width = TEXT_ROW_WIDTH,
+                        align = "center",
+                        text = "copy pattern"
+                    }
+                }
             },
             view:vertical_aligner {
                 mode = "distribute",
@@ -89,20 +89,20 @@ function Config:open_config ()
                     view:valuebox {
                         -- id = "command",
                         width = MENU_ROW_WIDTH,
-                        value = Config.prefs.denominator.value,
+                        value = Config.prefs.numerator.value,
                         min = 1,
                         max = 32,
                         steps = {[1]=1, [2]=2},
-                        notifier = function (value) Config.prefs.denominator.value = value end
+                        notifier = function (value) Config.prefs.numerator.value = value end
                     }
                 },
-                -- view:row {
-                    -- style = "plain",
-                    -- view:checkbox {
-                        -- value = Config.prefs.copy_pattern.value,
-                        -- notifier = function () Config.prefs.copy_pattern.value = not Config.prefs.copy_pattern.value end
-                    -- }
-                -- }
+                view:row {
+                    style = "plain",
+                    view:checkbox {
+                        value = Config.prefs.copy_pattern.value,
+                        notifier = function () Config.prefs.copy_pattern.value = not Config.prefs.copy_pattern.value end
+                    }
+                }
             }
         }
     }
